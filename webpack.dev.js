@@ -10,6 +10,10 @@ module.exports = merge(common, {
     sourceMapFilename: "[name].[contenthash].js.map",
     path: path.resolve(__dirname, "dist")
   },
+  devServer: {
+    port: 8080,
+    host: '192.168.50.66'
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/template.html"

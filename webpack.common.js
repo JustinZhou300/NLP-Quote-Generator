@@ -4,7 +4,8 @@ var HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: {
-    main: "./src/index.js"
+    main: "./src/index.js",
+    worker: "./src/worker.js"
   },
   devtool: 'inline-source-map',
   module: {

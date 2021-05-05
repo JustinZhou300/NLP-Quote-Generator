@@ -32,7 +32,6 @@ export default class App {
     generateText(){
         this.text_count = 0;
         this.temperature = this.temperature_slider.value;
-        console.log(this.temperature)
         this.disableGeneration();
         const randomNum = Math.floor(Math.random() * first_word.length); 
         this.text = first_word[randomNum];
@@ -57,7 +56,7 @@ export default class App {
         //remove space at the end of a string.
         this.text = this.text.replace(/ (\.|\?|!)$/,"$1");
         // apply upper case to first character of sentence
-        this.text = this.text.replace(/\. [a-z]/g, (x) => { return x.toUpperCase()} );
+        this.text = this.text.replace(/(\.|!|\?) [a-z]/g, (x) => { return x.toUpperCase()} );
 
     }
 
@@ -68,7 +67,7 @@ export default class App {
         {
             switch(m.data.type){
                 case "load":
-                    console.log("loaded");
+                    console.log("Tensorflow loaded");
                     this.enableGeneration();
                     break;
                 case "generate":

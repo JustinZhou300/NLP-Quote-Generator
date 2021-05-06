@@ -2,23 +2,42 @@ import * as tf from '@tensorflow/tfjs';
 import word_index from './assets/model/word_index.js';
 import reverse_word_index from './assets/model/reverse_word_index.js';
 
+
+type wordIndex = {
+    [key: string]: number
+}
+
+type revserseWordIndex = {
+    [key: string]: string
+}
+
+
 class PredictWorker{
+    model: any;
+    sequence_length: number;
+    temperature: number;
+    max_length: number;
+    text: string;
+    word_index : wordIndex;
+    reverse_word_index : revserseWordIndex;
 
     constructor(){
         this.model = null;
         this.sequence_length = 99;
         this.temperature = 0.1;
         this.max_length = 100;
+        this.word_index = word_index;
+        this.reverse_word_index = reverse_word_index 
     }
 
-    loadModel() {
+    loadModel() : void {
         tf.loadLayersModel("./assets/model/model.json").then( (model) => {
             this.model = model;
             self.postMessage({type:"load",data:"done"});
         })
     }
 
-    generateText(){
+    generateText() : void {
         for (let i = 0; i < this.max_length ; i++){
             let sequence = this.text_to_sequence(this.text);
             let padded_sequence = this.padSequence(sequence,this.sequence_length)
@@ -32,11 +51,11 @@ class PredictWorker{
         }
     }
 
-    index_to_word(index){
-        return reverse_word_index[index]
+    index_to_word(index: string) : string {
+        return this.reverse_word_index[index]
     }
 
-    padSequence(sequence, length, pre=true){
+    padSequence(sequence : number[], length: number, pre=true) : any[]{
         const emptyArray = new Array(length - sequence.length ).fill(0);
         if (pre) {
             return emptyArray.concat(sequence);
@@ -46,14 +65,14 @@ class PredictWorker{
         }
     }   
 
-    predict(input){
+    predict(input : tf.Tensor) : string {
         const a = this.model.predict(input);
         const index = this.sample(a,this.temperature);
-        const word = this.index_to_word(index);
+        const word = this.index_to_word(index.toString());
         return word;
     }
 
-    sample(tf_array,temperature) {
+    sample(tf_array : tf.Tensor,temperature: number) : number {
         return tf.tidy( () => {
             let a = tf_array.pow(tf.scalar(1/temperature));
             const p_sum = a.sum();
@@ -61,22 +80,22 @@ class PredictWorker{
           return this.random_choice(a);
     })};
 
-    random_choice(tf_array){
+    random_choice(tf_array: tf.Tensor) : number {
         let sum = 0;
         const r = Math.random();
         const values = tf_array.dataSync();
-        for (let i in values){
+        for (let i =0 ; i < values.length ; i++){
             sum += values[i];
             if ( r <= sum) return i;
         }
     }
 
-    text_to_sequence(text){
+    text_to_sequence(text: string) : number[]{
         let textSplit = text.toLowerCase().split(" ")
         let sequence = [];
         for (let i in textSplit){
             if (textSplit[i] in word_index){
-                sequence.push(word_index[textSplit[i]]);
+                sequence.push( this.word_index[textSplit[i]] );
             }
             else{
                 sequence.push(1);
@@ -85,12 +104,12 @@ class PredictWorker{
         return sequence;
     }
 
-    sequence_to_text(sequence){
+    sequence_to_text(sequence : tf.Tensor){
         let text = ""
         const sequenceArray = sequence.dataSync();
         for (let i in sequenceArray){
-            if( sequenceArray[i] in reverse_word_index ){
-                text = `${text} ${this.index_to_word(sequenceArray[i])}`;
+            if( sequenceArray[i] in this.reverse_word_index ){
+                text = `${text} ${this.index_to_word(sequenceArray[i].toString())}`;
             }
         }
         return text;
@@ -98,7 +117,7 @@ class PredictWorker{
 
 }
 
-self.onmessage = (m) => {
+self.onmessage = (m: any) => {
     switch(m.data.type){
         case "load":
             predictWorker.loadModel();

@@ -4,8 +4,8 @@ var HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: {
-    main: "./src/index.js",
-    worker: "./src/worker.js"
+    main: "./src/index.ts",
+    worker: "./src/worker.ts"
   },
   devtool: 'inline-source-map',
   module: {
@@ -23,8 +23,16 @@ module.exports = {
             outputPath: "assets/imgs"
           }
         }
+      },
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       }
     ]
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [
     new CopyWebpackPlugin({

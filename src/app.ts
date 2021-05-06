@@ -2,43 +2,51 @@ import first_word from './assets/model/first_word.js';
 
 export default class App {
 
+    temperature: number;
+    max_length: number;
+    text: string;
+    text_count: number;
+    generateButton: HTMLButtonElement;
+    generatedText: HTMLElement;
+    temperature_slider: HTMLInputElement;
+    worker: Worker;
+
     constructor()
     {
         this.temperature = 0.01;
         this.max_length = 100;
         this.text = "";
-        this.generateButton = document.getElementById("generate-button");
+        this.generateButton = <HTMLButtonElement> document.getElementById("generate-button");
         this.generatedText = document.getElementById("generated-text");
-        this.temperature_slider = document.getElementById("temperature-slider");
+        this.temperature_slider = <HTMLInputElement> document.getElementById("temperature-slider");
         this.generateButton.disabled = true;
         this.workerSetup();
         this.generateButton.onclick = () => {
             this.generateText();
         }
-        
         this.text_count = 0;
     }
 
-    enableGeneration() {
+    enableGeneration() : void {
         this.generateButton.innerText = "Generate a New Quote";
         this.generateButton.disabled = false;
     }
 
-    disableGeneration(){
+    disableGeneration() : void {
         this.generateButton.innerText = "Generating...";
         this.generateButton.disabled = true;
     }
 
-    generateText(){
+    generateText() : void {
         this.text_count = 0;
-        this.temperature = this.temperature_slider.value;
+        this.temperature = Number(this.temperature_slider.value);
         this.disableGeneration();
         const randomNum = Math.floor(Math.random() * first_word.length); 
         this.text = first_word[randomNum];
         this.worker.postMessage({type:"generate",data: this.text, temp: this.temperature, length: this.max_length})
     }
 
-    format_text(){
+    format_text() : void{
         // capitalize I
         this.text = this.text.replace(/ i /g, " I ");
         this.text = this.text.replace(/ i'/g, " I'");
@@ -60,8 +68,8 @@ export default class App {
 
     }
 
-    workerSetup(){
-        this.worker = new Worker(new URL('./worker.js', import.meta.url));
+    workerSetup() : void {
+        this.worker = new Worker(new URL('./worker', import.meta.url));
         this.worker.postMessage({type: "load"});
         this.worker.onmessage = (m) =>
         {
